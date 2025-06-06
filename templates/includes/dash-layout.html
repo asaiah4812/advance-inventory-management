@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="min-h-screen flex">
+    <c-sidebar />
+      <!-- Main Content -->
+      <div class="flex-1 flex flex-col">
+          <c-header />
+         {% block layout %}
+
+         {% endblock %}
+      </div>
+  </div>
+
+{% endblock %}

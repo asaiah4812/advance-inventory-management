@@ -1,0 +1,177 @@
+{% extends 'includes/dash-layout.html' %}
+
+{% load static %}
+
+{% block layout %}
+
+ <!-- Main Content Area -->
+ <main class="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200" x-data="inventoryData()">
+    <!-- Filters and Search -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6 transition-colors duration-200">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+            <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <div class="relative">
+                    <input type="text" placeholder="Search products..." x-model="searchTerm"
+                           class="pl-10 pr-4 py-2 rounded-lg text-sm bg-gray-100 dark:bg-gray-700 border border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white w-full sm:w-64">
+                    <div class="absolute left-3 top-2 text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <select x-model="categoryFilter" class="rounded-lg text-sm bg-gray-100 dark:bg-gray-700 border border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white py-2 px-3">
+                        <option value="">All Categories</option>
+                        <option value="Cases">Cases</option>
+                        <option value="Screen Protectors">Screen Protectors</option>
+                        <option value="Chargers">Chargers</option>
+                        <option value="Cables">Cables</option>
+                        <option value="Headphones">Headphones</option>
+                    </select>
+                    <select x-model="stockFilter" class="rounded-lg text-sm bg-gray-100 dark:bg-gray-700 border border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white py-2 px-3">
+                        <option value="">All Stock</option>
+                        <option value="low">Low Stock</option>
+                        <option value="in">In Stock</option>
+                        <option value="out">Out of Stock</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <a href="add-product.html" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm flex items-center transition-colors duration-200">
+                    <i class="fas fa-plus mr-2"></i> Add Product
+                </a>
+                <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-sm flex items-center transition-colors duration-200">
+                    <i class="fas fa-file-export mr-2"></i> Export
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors duration-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            <div class="flex items-center cursor-pointer" @click="sortBy('name')">
+                                Product
+                                <i class="fas fa-sort ml-1"></i>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            <div class="flex items-center cursor-pointer" @click="sortBy('category')">
+                                Category
+                                <i class="fas fa-sort ml-1"></i>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            <div class="flex items-center cursor-pointer" @click="sortBy('price')">
+                                Price
+                                <i class="fas fa-sort ml-1"></i>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            <div class="flex items-center cursor-pointer" @click="sortBy('stock')">
+                                Stock
+                                <i class="fas fa-sort ml-1"></i>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    <template x-for="product in filteredProducts" :key="product.id">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 flex-shrink-0 bg-gray-100 dark:bg-gray-700 rounded-md flex items-center justify-center">
+                                        <i :class="product.icon" class="text-gray-500 dark:text-gray-400"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white" x-text="product.name"></div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400" x-text="product.sku"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-500 dark:text-gray-400" x-text="product.category"></div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-500 dark:text-gray-400" x-text="'$' + product.price.toFixed(2)"></div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-500 dark:text-gray-400" x-text="product.stock"></div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                      :class="{
+                                        'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200': product.stock > 10,
+                                        'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200': product.stock > 0 && product.stock <= 10,
+                                        'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200': product.stock === 0
+                                      }"
+                                      x-text="product.stock > 10 ? 'In Stock' : (product.stock > 0 ? 'Low Stock' : 'Out of Stock')">
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+                <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                    Previous
+                </button>
+                <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                    Next
+                </button>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                        Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of <span class="font-medium" x-text="filteredProducts.length"></span> results
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <button class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            <span class="sr-only">Previous</span>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-indigo-50 dark:bg-indigo-900 text-sm font-medium text-indigo-600 dark:text-indigo-300">
+                            1
+                        </button>
+                        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            2
+                        </button>
+                        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            3
+                        </button>
+                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200">
+                            ...
+                        </span>
+                        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            8
+                        </button>
+                        <button class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            <span class="sr-only">Next</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% endblock %}

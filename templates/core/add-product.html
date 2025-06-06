@@ -1,0 +1,161 @@
+{% extends 'includes/dash-layout.html' %}
+
+{% load static %}
+
+{% block layout %}
+
+ <!-- Main Content Area -->
+ <main class="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200" x-data="addProductData()">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-colors duration-200">
+            <form @submit.prevent="saveProduct">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Basic Information -->
+                    <div class="md:col-span-2">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Basic Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="productName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Name *</label>
+                                <input type="text" id="productName" x-model="product.name" required
+                                       class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label for="sku" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SKU *</label>
+                                <input type="text" id="sku" x-model="product.sku" required
+                                       class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category and Brand -->
+                    <div>
+                        <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category *</label>
+                        <select id="category" x-model="product.category" required
+                                class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">Select Category</option>
+                            <option value="Cases">Cases</option>
+                            <option value="Screen Protectors">Screen Protectors</option>
+                            <option value="Chargers">Chargers</option>
+                            <option value="Cables">Cables</option>
+                            <option value="Headphones">Headphones</option>
+                            <option value="Power Banks">Power Banks</option>
+                            <option value="Stands">Stands</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="brand" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Brand</label>
+                        <input type="text" id="brand" x-model="product.brand"
+                               class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    </div>
+
+                    <!-- Compatible Devices -->
+                    <div class="md:col-span-2">
+                        <label for="compatibleDevices" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Compatible Devices</label>
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="device in availableDevices" :key="device">
+                                <div class="flex items-center">
+                                    <input type="checkbox" :id="'device-' + device" :value="device" x-model="product.compatibleDevices"
+                                           class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    <label :for="'device-' + device" class="ml-2 text-sm text-gray-700 dark:text-gray-300" x-text="device"></label>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Price and Cost -->
+                    <div>
+                        <label for="price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Selling Price ($) *</label>
+                        <input type="number" id="price" x-model="product.price" step="0.01" min="0" required
+                               class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label for="cost" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cost Price ($)</label>
+                        <input type="number" id="cost" x-model="product.cost" step="0.01" min="0"
+                               class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    </div>
+
+                    <!-- Stock Information -->
+                    <div class="md:col-span-2">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Stock Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="stock" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Stock *</label>
+                                <input type="number" id="stock" x-model="product.stock" min="0" required
+                                       class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label for="lowStockThreshold" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Low Stock Threshold</label>
+                                <input type="number" id="lowStockThreshold" x-model="product.lowStockThreshold" min="0"
+                                       class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Storage Location</label>
+                                <input type="text" id="location" x-model="product.location"
+                                       class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Description -->
+                    <div class="md:col-span-2">
+                        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Description</label>
+                        <textarea id="description" x-model="product.description" rows="4"
+                                  class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                  placeholder="Enter product description..."></textarea>
+                    </div>
+
+                    <!-- Product Images -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Images</label>
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg hover:border-indigo-400 transition-colors duration-200">
+                            <div class="space-y-1 text-center">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
+                                <div class="flex text-sm text-gray-600 dark:text-gray-400">
+                                    <label for="file-upload" class="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                        <span>Upload files</span>
+                                        <input id="file-upload" name="file-upload" type="file" class="sr-only" multiple accept="image/*">
+                                    </label>
+                                    <p class="pl-1">or drag and drop</p>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF up to 10MB</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Supplier Information -->
+                    <div class="md:col-span-2">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Supplier Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="supplier" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Supplier Name</label>
+                                <input type="text" id="supplier" x-model="product.supplier"
+                                       class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label for="supplierContact" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Supplier Contact</label>
+                                <input type="text" id="supplierContact" x-model="product.supplierContact"
+                                       class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="mt-8 flex justify-end space-x-4">
+                    <button type="button" class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Cancel
+                    </button>
+                    <button type="button" class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Save as Draft
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Add Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+{% endblock %}
